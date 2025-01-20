@@ -37,7 +37,7 @@ async function copyDir(folder, newFolder) {
       }),
     );
 
-    stdout.write('Folder have been sucsessfully copied.');
+    stdout.write('Folder have been sucsessfully copied.\n');
   } catch (err) {
     throw new Error(`Error copying folder: ${err.message}`);
   }

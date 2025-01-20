@@ -20,7 +20,7 @@ async function mergeCSS(folder, newFolder, fileName) {
 
     await fs.writeFile(path.join(newFolder, fileName), content.join('\n'));
 
-    stdout.write('File bundle.css has been successfully created.');
+    stdout.write('File bundle.css has been successfully created.\n');
   } catch (err) {
     throw new Error(`Error merging CSS: ${err.message}`);
   }
