@@ -1,5 +1,7 @@
+/* eslint-disable indent */
 const fs = require('fs/promises');
 const path = require('path');
+const { stdout } = require('process');
 
 const folder = path.join(__dirname, 'files');
 const newFolder = path.join(__dirname, 'files-copy');
@@ -7,35 +9,38 @@ const newFolder = path.join(__dirname, 'files-copy');
 copyDir(folder, newFolder);
 
 async function copyDir(folder, newFolder) {
-  await fs.mkdir(newFolder, { recursive: true });
+  try {
+    await fs.mkdir(newFolder, { recursive: true });
 
-  const files = await fs.readdir(folder, { withFileTypes: true });
-  const newFiles = await fs.readdir(newFolder, { withFileTypes: true });
+    const files = await fs.readdir(folder, { withFileTypes: true });
+    const newFiles = await fs.readdir(newFolder, { withFileTypes: true });
 
-  if (newFiles.length) {
+    if (newFiles.length) {
+      await Promise.all(
+        newFiles.map((item) => {
+          return fs.rm(path.join(newFolder, item.name), { recursive: true });
+        }),
+      );
+    }
+
     await Promise.all(
-      newFiles.map((item) => {
-        return fs.rm(path.join(newFolder, item.name), { recursive: true });
+      files.map((item) => {
+        item.isDirectory()
+          ? copyDir(
+              path.join(folder, item.name),
+              path.join(newFolder, item.name),
+            )
+          : fs.copyFile(
+              path.join(folder, item.name),
+              path.join(newFolder, item.name),
+            );
       }),
     );
-  }
 
-  await Promise.all(
-    files.map((item) => {
-      if (item.isDirectory()) {
-        return copyDir(
-          path.join(folder, item.name),
-          path.join(newFolder, item.name),
-        );
-      } else {
-        return fs.copyFile(
-          path.join(folder, item.name),
-          path.join(newFolder, item.name),
-        );
-      }
-    }),
-  );
-  console.log('Folder have been sucsessfully copied.');
+    stdout.write('Folder have been sucsessfully copied.');
+  } catch (err) {
+    throw new Error(`Error copying folder: ${err.message}`);
+  }
 }
 
 exports.copyDir = copyDir;
